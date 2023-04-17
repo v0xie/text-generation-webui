@@ -160,13 +160,17 @@ def generate_reply(question, state, eos_token=None, stopping_strings=[]):
             else:
                 if not shared.is_chat():
                     yield formatted_outputs(question, shared.model_name)
-
+                evaluated_stopping_strings = ast.literal_eval(f"[{state['custom_stopping_strings']}]")
                 # RWKV has proper streaming, which is very nice.
                 # No need to generate 8 tokens at a time.
                 for reply in shared.model.generate_with_streaming(context=question, **generate_params):
                     output = original_question + reply
                     if not shared.is_chat():
                         reply = original_question + apply_extensions(reply, 'output')
+                    found_stop_string = next((s for s in evaluated_stopping_strings if s in reply), None)
+                    if found_stop_string:
+                        yield formatted_outputs(reply.partition(found_stop_string)[0], shared.model_name)
+                        break
                     yield formatted_outputs(reply, shared.model_name)
 
         except Exception:
