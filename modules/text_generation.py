@@ -169,7 +169,7 @@ def generate_reply(question, state, eos_token=None, stopping_strings=[]):
                     if not shared.is_chat():
                         original_reply = apply_extensions(reply, 'output')
                         reply = original_question + original_reply
-                    found_stop_string = next((s for s in evaluated_stopping_strings if s in original_reply), None)
+                    found_stop_string = next((s for s in stopping_strings + evaluated_stopping_strings if s in original_reply), None)
                     if found_stop_string:
                         yield formatted_outputs(str(reply).rsplit(found_stop_string, 1)[0], shared.model_name)
                         break
